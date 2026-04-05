@@ -35,7 +35,7 @@ services:
       context: ./scraper
     container_name: lol-scraper
     environment:
-      API_URL: http://backend:8080/api
+      API_BASE_URL: http://backend:8080/api
     depends_on:
       - backend
     restart: "no"

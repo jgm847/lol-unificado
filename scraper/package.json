@@ -4,10 +4,7 @@
   "private": true,
   "type": "commonjs",
   "scripts": {
-    "scrape": "node scraping-champs.cjs",
-    "import": "node import-from-json.cjs",
-    "smart": "node run-smart.cjs",
-    "start": "node run-smart.cjs"
+    "start": "node scraping-champs.cjs"
   },
   "dependencies": {
     "cheerio": "^1.1.2",

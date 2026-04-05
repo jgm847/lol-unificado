@@ -37,7 +37,7 @@ public class Champion {
     private Integer riotPoints;
     private String lolUrl;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "champion_classes", joinColumns = @JoinColumn(name = "champion_id"))
     @Column(name = "clase")
     private List<String> clases = new ArrayList<>();

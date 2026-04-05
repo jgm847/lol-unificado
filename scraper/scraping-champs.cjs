@@ -248,6 +248,14 @@ async function scrapeHabilidades(lolUrl, champName) {
 }
 
 async function init() {
+  if (fs.existsSync("campeones.json")) {
+    console.log("Archivo campeones.json encontrado. Se cargarán los datos guardados en lugar de hacer el web scraping...");
+    const data = fs.readFileSync("campeones.json", "utf-8");
+    const campeonesGuardados = JSON.parse(data);
+    await enviarAlBackend(campeonesGuardados);
+    return;
+  }
+
   const listUrl = "https://leagueoflegends.fandom.com/es/wiki/Lista_de_campeones";
 
   console.log("Cargando lista de campeones...");
@@ -343,7 +351,48 @@ async function init() {
 
   fs.writeFileSync("campeones.json", JSON.stringify(this.campeones, null, 2), "utf-8");
   console.log("OK → Guardado campeones.json");
+
+  await enviarAlBackend(this.campeones);
   await this.browser.close();
+}
+
+async function esperarBackend(url, retries = 30, delayMs = 5000) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const res = await fetch(url);
+      if (res.ok) {
+        console.log("Backend disponible.");
+        return;
+      }
+    } catch (e) {
+      // ignorar y reintentar
+    }
+    console.log(`Esperando backend... intento ${i + 1}/${retries}`);
+    await sleep(delayMs);
+  }
+  throw new Error("El backend no estuvo disponible a tiempo");
+}
+
+async function enviarAlBackend(campeones) {
+  const apiBaseUrl = process.env.API_BASE_URL || "http://backend:8080/api";
+  const endpoint = `${apiBaseUrl}/custom/champions/bulk`;
+
+  await esperarBackend(`${apiBaseUrl}/custom/champions`);
+
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(campeones),
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Error enviando campeones al backend: ${response.status} - ${body}`);
+  }
+
+  console.log("Datos enviados correctamente al backend.");
 }
 
 init().catch(async (err) => {
