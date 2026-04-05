@@ -1,0 +1,53 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: lol-postgres
+    environment:
+      POSTGRES_DB: loldb
+      POSTGRES_USER: loluser
+      POSTGRES_PASSWORD: lolpass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U loluser -d loldb"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+    container_name: lol-backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/loldb
+      SPRING_DATASOURCE_USERNAME: loluser
+      SPRING_DATASOURCE_PASSWORD: lolpass
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+
+  scraper:
+    build:
+      context: ./scraper
+    container_name: lol-scraper
+    environment:
+      API_URL: http://backend:8080/api
+    depends_on:
+      - backend
+    restart: "no"
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: lol-frontend
+    depends_on:
+      - backend
+    ports:
+      - "4200:80"
+
+volumes:
+  postgres_data:

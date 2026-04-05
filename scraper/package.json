@@ -1,0 +1,16 @@
+{
+  "name": "lol-scraper",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "scrape": "node scraping-champs.cjs",
+    "import": "node import-from-json.cjs",
+    "smart": "node run-smart.cjs",
+    "start": "node run-smart.cjs"
+  },
+  "dependencies": {
+    "cheerio": "^1.1.2",
+    "puppeteer": "^24.7.2"
+  }
+}
